@@ -17,15 +17,13 @@ This image is taken from [the official Axon documentation](https://docs.axoniq.i
 
 ## Event Store
 
-Where all our events will be stored? Axon Server abstracts us of storing the events by ourselves using an *EmbeddedEventStore*. We can configure it via properties when running our Axon server docker image. 
-
-However, we can still use SQL / NoSQL storages for the event store. See all the current implementations [here](EmbeddedEventStore). This is something we'll like to explore further in the future.
+Where all our events will be stored? In the Event Store running under the Axon Server (see *AxonServerEventStore.java* for more information). If we want to use an embedded event store in, let's say, a RDBMS instance or in Mongo, Axon provides custom implementations for this. More in [here](https://docs.axoniq.io/reference-guide/1.3-infrastructure-components/repository-and-event-store#jdbceventstorageengine). This is something we'll like to explore further in the future.
 
 ## Aggregates
 
 Aggregates are the domain objects in Axon. We can configure our configuration to match the aggregate to an entity in our database. 
 
-When we connect our application, it will read all the events from the Event Store and initialize the aggregates in our repository. Once the aggregate is totally synchronized, it will be ready to be used. See [*AggregateLifecycle.java*](https://axoniq.io/apidocs/3.1/org/axonframework/commandhandling/model/AggregateLifecycle.html).
+When we connect our application, Events will be read on-demand when an existing aggregate is targeted by a command. To enhance efficiency when processing multiple commands to the same aggregate, Axon supports caching repositories that would keep the aggregate in memory to avoid another read of the same events. Once aggregates are totally synchronized, it will be ready to be used. See [*AggregateLifecycle.java*](https://axoniq.io/apidocs/3.1/org/axonframework/commandhandling/model/AggregateLifecycle.html).
 
 # Getting Started
 
@@ -170,7 +168,7 @@ public class BookCreatedEvent {
 }
 ```
 
-Hold on... Something is missing... where are we setting the library data? Not in the command handler: we need to validate the data in the commands, but we should not set the data here. Why? As we already said, after our application started and joined to the Axon server, it will synchronize the events in the server and create all the aggregates. Therefore, we need to set the data when handling the events:
+Hold on... Something is missing... where are we setting the library data? Not in the command handler: we need to validate the data in the commands, but we should not set the data here. Why? As we already said, after our application started and joined to the Axon server, it will synchronize the events in the server and create the required aggregates. Therefore, we need to set the data when handling the events:
 
 ```java
 @Aggregate
@@ -472,7 +470,7 @@ We can run our application as an usual Spring Boot application. If you see the f
 **********************************************
 ```
 
-This message means we cannot connect with the Axon server. Double check the Axon server is up and running and browse the dashboard in the browser. 
+This message means we cannot connect with the Axon server. Double check the Axon server is up and running and/or go to the Axon dashboard in the browser. 
 
 - Add a library:
 
@@ -511,7 +509,7 @@ GET: http://localhost:8080/api/library/1
 
 # Conclusion
 
-We have introduced some of the most important features in Axon and how Axon works. Axon Framework makes extremely easy to implement a CQRS architecture and is very well integrated to Spring and Spring Cloud (for doing the services discoverable). 
+We have introduced some of the most important features in Axon and how Axon works. Axon Framework makes extremely easy to implement a CQRS architecture and is very well integrated to Spring and Spring Cloud (for doing the services discoverable). Also, Axon is **VERY** customisable. We can refine until the most tiny component in your architecture which demostrates what a well designed the framework is. 
 
 On the other side, even when the documentation is quite extensive and good, I would have appreciated working examples for version 4 of basic functionality. It does not help either when the Axon documentation redirects to the first chapter when you search something in google. 
 

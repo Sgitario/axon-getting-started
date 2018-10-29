@@ -1,6 +1,7 @@
 package org.sgitario.axon.library;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import org.axonframework.commandhandling.gateway.CommandGateway;
@@ -40,7 +41,8 @@ public class LibraryRestController {
 
 	@GetMapping("/api/library/{library}")
 	public Library getLibrary(@PathVariable Integer library) throws InterruptedException, ExecutionException {
-		return queryGateway.query(new GetLibraryQuery(library), Library.class).get();
+		CompletableFuture<Library> future = queryGateway.query(new GetLibraryQuery(library), Library.class);
+		return future.get();
 	}
 
 	@PostMapping("/api/library/{library}/book")
